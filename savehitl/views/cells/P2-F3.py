@@ -1,0 +1,2 @@
+# Section 6.4: graph P2-F3.
+diff_panels(D2, BND2, ["vs_policy_1"], "difference_age_gap_abs", 'Naive review minus full automation, size of the age gap, against capacity, with the overall false rejection rate', "P2-F3_absolute_age_gap.png", second_axis=sec2)

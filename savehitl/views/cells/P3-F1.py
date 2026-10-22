@@ -1,0 +1,2 @@
+# Section 6.2: graph P3-F1.
+diff_panels(D3, BND3, ["vs_policy_1", "vs_policy_2"], "difference_expected_loss", 'Analyst-aware deferral minus full automation, and minus naive review, expected loss, against capacity', "P3-F1_expected_loss.png")

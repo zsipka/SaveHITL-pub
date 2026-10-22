@@ -1,0 +1,54 @@
+SaveHITL-pub
+Copyright 2026 Zeljko Sipka
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository uses and modifies OpenL2D.
+
+  OpenL2D
+  Copyright 2022 Feedzai
+  Licensed under the Apache License, Version 2.0
+  (https://www.apache.org/licenses/LICENSE-2.0)
+  Source: https://github.com/feedzai/openl2d
+  Commit used: cfe5fd00850684a321187e41bdd49719a96a0ba1
+
+  OpenL2D's LICENSE file also states: "For commercial uses of OpenL2D
+  please contact <oss-licenses@feedzai.com>."
+
+OpenL2D's code is not included in this repository. The notebook downloads it
+from the source above, at the commit above, and applies the four patch files
+in patches/. Each patch file begins with a statement that this project
+changed the OpenL2D files it names. The changes and their reasons:
+
+  0001-expert_gen-w_dict-protected-weights.patch
+    Changes: Code/synthetic_experts/expert_gen.py
+    Why: it fixes a defect in OpenL2D. With the benchmark's own expert
+    settings, one line builds the protected-attribute weights as a list
+    of empty values, and a later line indexes into each of those empty
+    values, so the expert generator stops with a type error before
+    fitting any expert. This patch changes that one line.
+
+  0002-dataset_cfg-protected-entry-customer_age.patch
+    Changes: Code/alert_data/dataset_cfg.yaml
+    Why: it fixes a defect in OpenL2D. The protected-attribute entry
+    names the feature "age" with type "numeric". The generator's code
+    tests for "numerical" or "categorical", and the dataset's column is
+    "customer_age". So the attribute is silently not split at age 50,
+    contrary to the code's own comment. This patch names "customer_age"
+    with type "numerical".
+
+  0006-testbed-drawn-teams-membership.patch
+    Changes: Code/testbed/testbed_train_alert_generation.py and
+    Code/testbed/cfg.yaml
+    Why: adapted for this study (how the router's training teams are
+    built).
+
+  0009-testbed_cfg-destination_path_train-drawn-teams-relative.patch
+    Changes: Code/testbed/cfg.yaml
+    Why: adapted for this study (where the training files are written).
+
+The parts of OpenL2D's files that the patch files reproduce remain under
+OpenL2D's copyright and licence.
+
+The FiFAR dataset is not included in this repository and is not covered by
+this licence. Its attribution, and the note on the files in results/, which
+are derived from FiFAR, are in README.md.

@@ -1,0 +1,3 @@
+# Section 3.3: graph P3-F4, analyst-aware deferral minus naive review, expected loss, split into two parts.
+stacked(D3, "vs_policy_2", ["classifier_part_expected_loss", "reviewed_part_expected_loss"], ['alerts left to the classifier', 'alerts reviewed'],
+        'Analyst-aware deferral minus naive review, expected loss, split into the alerts left to the classifier and the alerts reviewed', "P3-F4_split.png")

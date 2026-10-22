@@ -1,0 +1,75 @@
+This patch is part of SaveHITL-pub. The SaveHITL project changed the
+following OpenL2D files in 2026:
+  Code/testbed/testbed_train_alert_generation.py
+  Code/testbed/cfg.yaml
+Why: adapted for this study (how the router's training teams are built).
+OpenL2D: Copyright 2022 Feedzai, licensed under the Apache License,
+Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+Source: https://github.com/feedzai/openl2d, commit
+cfe5fd00850684a321187e41bdd49719a96a0ba1. See NOTICE.
+
+--- a/Code/testbed/cfg.yaml
++++ b/Code/testbed/cfg.yaml
+@@ -71,36 +71,41 @@
+ 
+   #The user may generate several capacity configurations
+   ###################################################
+-    team_1:
++    drawn_1:
+       deferral_rate: 1
+       n_experts: 10
+       n_experts_seed: 42
+       variable_experts_per_batch: False
+       distribution: 'homogeneous'
+-    team_2:
++      members: [13, 17, 19, 25, 26, 30, 32, 39, 45, 48]
++    drawn_2:
+       deferral_rate: 1
+       n_experts: 10
+       n_experts_seed: 43
+       variable_experts_per_batch: False
+       distribution: 'homogeneous'
+-    team_3:
++      members: [3, 4, 6, 8, 12, 15, 37, 41, 46, 47]
++    drawn_3:
+       deferral_rate: 1
+       n_experts: 10
+       n_experts_seed: 44
+       variable_experts_per_batch: False
+       distribution: 'homogeneous'
+-    team_4:
++      members: [0, 5, 9, 16, 24, 27, 31, 33, 34, 44]
++    drawn_4:
+       deferral_rate: 1
+       n_experts: 10
+       n_experts_seed: 45
+       variable_experts_per_batch: False
+       distribution: 'homogeneous'
+-    team_5:
++      members: [1, 2, 11, 21, 23, 29, 35, 36, 40, 43]
++    drawn_5:
+       deferral_rate: 1
+       n_experts: 10
+       n_experts_seed: 46
+       variable_experts_per_batch: False
+       distribution: 'homogeneous'
++      members: [7, 10, 14, 18, 20, 22, 28, 38, 42, 49]
+ 
+ environments_test:
+   batch:
+--- a/Code/testbed/testbed_train_alert_generation.py
++++ b/Code/testbed/testbed_train_alert_generation.py
+@@ -159,10 +159,9 @@
+         else:
+             random.seed(properties['n_experts_seed'])
+ 
+-        absent_humans_ix = random.sample(  # without replacement
+-            available_humans_ix,
+-            k=len(available_humans_ix) - int(properties['n_experts']),
+-        )
++        # patch 0006 (SaveHITL): membership fixed by the project's draw (cfg 'members') instead of random.sample
++        absent_humans_ix = [ix for ix in available_humans_ix if ix not in properties['members']]
++        assert len(absent_humans_ix) == len(available_humans_ix) - int(properties['n_experts'])
+         unc_human_capacities[absent_humans_ix] = 0
+ 
+         unassigned = (int(batch_size*properties['deferral_rate'])   - sum(unc_human_capacities))

@@ -1,0 +1,29 @@
+This patch is part of SaveHITL-pub. The SaveHITL project changed the
+following OpenL2D file in 2026:
+  Code/alert_data/dataset_cfg.yaml
+Why: it fixes a defect in OpenL2D. The protected-attribute entry names
+the feature "age" with type "numeric". The generator's code tests for
+"numerical" or "categorical", and the dataset's column is
+"customer_age". So the attribute is silently not split at age 50,
+contrary to the code's own comment. This patch names "customer_age"
+with type "numerical".
+OpenL2D: Copyright 2022 Feedzai, licensed under the Apache License,
+Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+Source: https://github.com/feedzai/openl2d, commit
+cfe5fd00850684a321187e41bdd49719a96a0ba1. See NOTICE.
+
+--- a/Code/alert_data/dataset_cfg.yaml	2026-10-12 11:38:37
++++ b/Code/alert_data/dataset_cfg.yaml	2026-10-12 11:38:37
+@@ -12,10 +12,10 @@
+   #If your protected attribute is CATEGORICAL, you must define:
+   # - protected_class - value that corresponds to the protected group.
+   protected:
+-    - feature: age
++    - feature: customer_age
+       protected_class: higher
+       protected_threshold: 50
+-      type: numeric 
++      type: numerical
+   model_score: 'model_score' #If the experts have access to a ML model's score, define its column (This can be ommited)
+   categorical: # Define the categorical feature's columns (This can be ommited)
+     - "payment_type"

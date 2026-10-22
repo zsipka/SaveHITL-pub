@@ -1,0 +1,2 @@
+# Section 6.3: graph P3-F2.
+diff_panels(D3, BND3, ["vs_policy_1", "vs_policy_2"], "difference_accepted_frauds", 'Analyst-aware deferral minus full automation, and minus naive review, frauds accepted, against capacity', "P3-F2_accepted_frauds.png")

@@ -1,0 +1,24 @@
+This patch is part of SaveHITL-pub. The SaveHITL project changed the
+following OpenL2D file in 2026:
+  Code/synthetic_experts/expert_gen.py
+Why: it fixes a defect in OpenL2D. With the benchmark's own expert
+settings, one line builds the protected-attribute weights as a list of
+empty values, and a later line indexes into each of those empty values,
+so the expert generator stops with a type error before fitting any
+expert. This patch changes that one line.
+OpenL2D: Copyright 2022 Feedzai, licensed under the Apache License,
+Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+Source: https://github.com/feedzai/openl2d, commit
+cfe5fd00850684a321187e41bdd49719a96a0ba1. See NOTICE.
+
+--- a/Code/synthetic_experts/expert_gen.py	2026-10-12 10:38:19
++++ b/Code/synthetic_experts/expert_gen.py	2026-10-12 10:38:19
+@@ -246,7 +246,7 @@
+                     size=group_cfg['n']
+             )]*len(PROTECTED_COL)
+         
+-        coefs_gen['protected'] = [None]*group_cfg['n']
++        coefs_gen['protected'] = [[None]*group_cfg['n']]*len(PROTECTED_COL)
+         group_cfg['w_stdev'] = None
+         group_cfg['w_mean'] = None
+     #Verifying integrity and lack of conflicts when using spike and slab

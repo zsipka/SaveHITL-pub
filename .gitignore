@@ -1,0 +1,34 @@
+# FiFAR is downloaded at run time and never committed
+FiFAR/
+
+# OpenL2D is cloned at run time and never committed
+openl2d/
+
+# Run outputs and logs, including the internal log, which is never shipped
+# (results/ is shipped and is not ignored)
+outputs/
+runs/
+logs/
+*.log
+
+# The folder the run hands back (brought back by the owner, never committed)
+returned/
+
+# Tables and graphs the run writes, and the tools it installs (never committed)
+tables/
+figures/
+.tools/
+savehitl_returned_outputs.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Operating system and editors
+.DS_Store
+.idea/
+.vscode/

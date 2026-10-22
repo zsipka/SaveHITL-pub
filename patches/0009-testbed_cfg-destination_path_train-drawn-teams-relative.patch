@@ -1,0 +1,20 @@
+This patch is part of SaveHITL-pub. The SaveHITL project changed the
+following OpenL2D file in 2026:
+  Code/testbed/cfg.yaml
+Why: adapted for this study (where the training files are written).
+OpenL2D: Copyright 2022 Feedzai, licensed under the Apache License,
+Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+Source: https://github.com/feedzai/openl2d, commit
+cfe5fd00850684a321187e41bdd49719a96a0ba1. See NOTICE.
+
+--- a/Code/testbed/cfg.yaml
++++ b/Code/testbed/cfg.yaml
+@@ -2,7 +2,7 @@
+ dataset_path: '../../FiFAR/alert_data/processed_data/alerts.parquet'
+ data_cfg_path: '../alert_data/dataset_cfg.yaml' # Dataset config file
+ expert_folder_path:  '../../FiFAR/synthetic_experts' # Path containing the outputs from expert_gen.py
+-destination_path_train: '../../FiFAR/testbed/train_alert' # Output directory of the generated training scenarios
++destination_path_train: '../../../outputs/train_alert' # Output directory of the generated training scenarios
+ destination_path_test: '../../FiFAR/testbed/test' # Output directory of the generated test scenarios
+ 
+ random_seed: 42

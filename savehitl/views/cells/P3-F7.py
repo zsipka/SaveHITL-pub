@@ -1,0 +1,2 @@
+# Section 8.4: graph P3-F7 and its counts.
+chance(CH3, 'Analyst-aware deferral: observed "beats" and "does worse" against the number expected by chance', "P3-F7_chance_count.png", dict(key='P3-F7.df1', hide=['rule'], rename={'n_intervals': 'descriptive ranges counted', 'n_beats': 'beats', 'n_does_worse': 'does worse', 'expected_each_side': 'expected by chance on each side', 'set_counted': 'results counted'}, index_names={}, column_names={}, values={}, index={}, cells=[], empty_cells=True))
