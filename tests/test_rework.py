@@ -123,7 +123,7 @@ def test_notebook_structure_of_the_rework(name):
     i = src.index('nb.section("F-data")')
     assert src[i - 1].startswith("These figures summarise FiFAR's `Base.csv` in aggregate")          # legal's sentence directly above
     for item in ("P2-F10", "P3-F10", "F-months"):                  # round-2 [analyst-33]: the runtime-estimate boxes
-        assert src[src.index(f'nb.section("{item}")') - 1].startswith("> **Runtime estimate (Colab free): ")
+        assert cells[src.index(f'nb.section("{item}")') - 1]["cell_type"] == "markdown" and re.search(r"^> \u26a0\ufe0f? Runtime estimate \(Colab free\): (\*\*)?\d+ minutes?(\*\*)?", src[src.index(f'nb.section("{item}")') - 1], re.M), item
     assert "Heavy step" not in text
     anchors = set(re.findall(r'<a id="([^"]+)"></a>', text))
     for c in md:
