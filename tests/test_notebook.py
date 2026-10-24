@@ -60,8 +60,8 @@ CELLS = os.path.join(ROOT, "savehitl", "views", "cells")
 READERS = r"(?:L\.csv|L\.path|L\.desc_load|L\.record|keyed_rows)\("
 
 
-def _built_items():
-    nbk = json.load(open(os.path.join(ROOT, "savehitl_results.ipynb"), encoding="utf-8"))
+def _built_items(name="savehitl_results.ipynb"):
+    nbk = json.load(open(os.path.join(ROOT, name), encoding="utf-8"))
     items = []
     for c in nbk["cells"]:
         if c["cell_type"] != "code":
@@ -72,6 +72,11 @@ def _built_items():
             m = re.fullmatch(r'\s*"([^"]+)"\s*', arg)
             assert m, f"nb.section called with something other than one literal item name: {arg!r}"
             items.append(m.group(1))
+        for arg in re.findall(r"nb\.write_files\(([^)]*)\)", src):         # items written but not shown (short notebook)
+            for a in arg.split(","):
+                m = re.fullmatch(r'\s*"([^"]+)"\s*', a)
+                assert m, f"nb.write_files called with something other than literal item names: {a!r}"
+                items.append(m.group(1))
     return items
 
 
@@ -120,8 +125,9 @@ def _coverage_faults():
 
 def test_a_every_built_item_is_in_the_mapping():
     from savehitl.views.sections import ITEMS
-    items = _built_items()
-    assert len(items) == 38          # rework: P3-T8 no longer shown; F-months, F-data, P3-F11, P3-T10 added
+    items = _built_items() + _built_items("savehitl_results_long.ipynb")
+    assert len(set(_built_items())) == 38              # round 2: the 22 shown and the 16 written by nb.write_files
+    assert len(set(_built_items("savehitl_results_long.ipynb"))) == 43   # round 2: the 38, plus five appendix table parts
     missing = [i for i in items if i not in nb.NEEDS]
     assert missing == []
     assert set(nb.NEEDS) <= set(ITEMS)                           # no entry for a name the views step does not know

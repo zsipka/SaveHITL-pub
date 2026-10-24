@@ -5,6 +5,7 @@ library and IPython's display only; every computation runs as a step in the pinn
 * `setup(fifar_download_allowed)`: environment, framework and FiFAR, each once per session (`runner`).
 * `section(name)`: runs the steps the item `name` needs (NEEDS, by item name; an unknown name stops) that have not run
   yet, in chain order, then the item's views step, and shows what that step wrote (tables, graphs, text) in order.
+* `write_files(*names)`: as `section` for each item, but shows nothing (the files of items a notebook does not show).
 * `run_time_table()`, `switch_state()`, `input_checksums()`: the technical section's records of this run, read from the
   run's own log.
 * `hand_back()`: the folder and archive of the run's outputs to bring back (`returned.build`); on Colab it is offered
@@ -99,6 +100,11 @@ NEEDS = {
     "P3-T5": _P2 + _P3,
     "P2-F8": _P2 + _P3,
     "P3-F7": _P2 + _P3,
+    "P2-T4-tables": _P2 + _P3,
+    "P3-T4-tables": _P2 + _P3,
+    "P2-F5-table": _P2 + _P3,
+    "P2-F7-tables": _P2 + _P3,
+    "P3-F6-tables": _P2 + _P3,
     "T-labels": [],
     "T-P2-T3": _P2 + _P3,
     "T-P3-T3": _P2 + _P3,
@@ -204,6 +210,14 @@ def section(name):
             display(Markdown(open(p, encoding="utf-8").read()))
         else:
             print(open(p, encoding="utf-8").read(), end="")
+
+
+def write_files(*names):
+    """Runs the views steps of the given items, each as `section` would, and shows nothing: their table and graph files
+    are written to `tables/` and `figures/`. The short notebook calls it for the items only the long notebook shows."""
+    for name in names:
+        need(*needs_of(name))
+        runner.run_step(L, "views_" + name.replace(".", "_"), "views", ["--section", name], label=f"tables and graphs: {name}", quiet=True)
 
 
 def _table(header, rows):

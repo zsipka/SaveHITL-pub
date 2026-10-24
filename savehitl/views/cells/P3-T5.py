@@ -8,3 +8,4 @@ v = T53[(T53["comparison"].isin(["vs_policy_1", "vs_policy_2"])) & (T53["version
 v["cell"] = [f"{L.fmt(p)} [{L.fmt(lo)}, {L.fmt(hi)}] {L.symbol(vd)}; seeds {L.fmt(a_)} to {L.fmt(b_)}" for p, lo, hi, vd, a_, b_ in
              zip(v["point_estimate"], v["ci_low"], v["ci_high"], v["verdict"], v["seed_min"], v["seed_max"])]
 V.show(v.pivot_table(index=["comparison name", "measure name", "team"], columns="capacity_label", values="cell", aggfunc="first")[L.CAP_ORDER], 'P3-T5.df1', hide=[], rename={}, index_names={'comparison name': 'comparison', 'measure name': 'measure'}, column_names={'capacity_label': 'capacity'}, values={}, index={'against policy 1': 'against full automation', 'against policy 2': 'against naive review'}, cells=[], empty_cells=True)
+V.md("fpr.reminder", "*" + L.FPR_REMINDER + "*", {})   # C14

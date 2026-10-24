@@ -247,7 +247,7 @@ def run_step(L, step, module, args=(), label=None, quiet=False):
     memory (bytes, converted by platform) in the run's log. Stops if the step fails."""
     out = os.path.join(L.outputs, step)
     if os.path.exists(os.path.join(out, "_done.json")):
-        log(L, f"{step}: already done in this session; not run again.", quiet=quiet)
+        log(L, f"{step}: already done in this session; not run again.", quiet=True)   # recorded in the log only, never printed
         return out
     os.makedirs(out, exist_ok=True)
     os.makedirs(L.logs, exist_ok=True)

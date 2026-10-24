@@ -1,10 +1,9 @@
 # Section 3.2: the age gap at capacity 0.75, teams B and C: FPR and FNR of each age group under each policy, among the
 # alerts (step descriptive, mean of the five versions over the five random orders), with the deciding verdict of
-# analyst-aware deferral against naive review on the age gap above each panel (deciding table of step verdicts3). Beside
-# it, the same FPRs over every application of the test month (descriptive; denominators from step applications).
+# analyst-aware deferral against naive review on the age gap above each panel (deciding table of step verdicts3). The
+# side table of FPRs over every application is removed (round-2 [analyst-35]); those figures are in P3-T10 (section 4.6).
 import matplotlib.lines as mlines
 fpfn = L.csv("d_fpfn", dtype={"version": str, "team": str, "capacity": str}, keep_default_na=False)
-tm = L.csv("a_test_month").set_index("age_group")
 L._ASSERT.check(bool((fpfn["n_legitimate"] >= L.MIN_GROUP).all() and (fpfn["n_frauds"] >= L.MIN_GROUP).all()),
                 "every displayed figure over at least 10 applications", panel="P3-F11")
 POL = [("full automation", "D"), ("naive review", "s"), ("analyst-aware deferral", "o")]
@@ -37,18 +36,7 @@ h = [mlines.Line2D([], [], color=COL[p], marker=m, ls="-", label=p) for p, m in 
 h += [mlines.Line2D([], [], color="0.3", marker="o", ls="none", label="aged 50 or over (filled)"),
       mlines.Line2D([], [], color="0.3", marker="o", markerfacecolor="white", ls="none", label="under 50 (hollow)")]
 fig.legend(handles=h, loc="lower center", ncol=5, fontsize=9, frameon=False, bbox_to_anchor=(0.5, -0.06))
-fig.text(0.5, -0.11, "The horizontal distance between a policy's two points is its age gap (FPR₅₀₊ − FPR<₅₀). Average of the five versions. "
+fig.text(0.5, -0.11, "The horizontal distance between a policy's two points is its age gap (FPR₅₀₊ − FPR<₅₀). Average of the five versions and five random orders. "
          "FNR by age group is descriptive, not a measure of the study.", ha="center", fontsize=9)
 fig.suptitle("Age gap at capacity 0.75: FPR and FNR of each age group under each policy, teams B and C", y=1.02)
 fig.tight_layout(); L.savefig(fig, "P3-F11_fpr_fnr_by_age.png"); plt.show()
-rows = []
-for team in ("B", "C"):
-    for pol, _ in POL:
-        r = {"team": team, "policy": pol}
-        for grp, name in (("50 or over", "FPR₅₀₊"), ("under 50", "FPR<₅₀"), ("all ages", "overall FPR")):
-            r[name] = round(pick(pol, team, grp)["fp"] / tm.at[grp, "n_legitimate"], 4)
-        rows.append(r)
-pop = pd.DataFrame(rows).set_index(["team", "policy"])
-V.md("P3-F11.pop-caption", "**FPRs on every application of the test month, descriptive; applications the Alert Model did not flag count as accepted "
-     "(teams B and C at capacity 0.75, average of the five versions)**", {})
-V.show(pop, "P3-F11.df1", empty_cells=True)

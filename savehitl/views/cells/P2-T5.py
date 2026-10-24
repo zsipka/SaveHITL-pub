@@ -9,3 +9,4 @@ v["cell"] = [f"{L.fmt(p)} [{L.fmt(lo)}, {L.fmt(hi)}] {L.symbol(vd)}; seeds {L.fm
              zip(v["point_estimate"], v["ci_low"], v["ci_high"], v["verdict"], v["seed_min"], v["seed_max"])]
 piv = v.pivot_table(index=["measure name", "team"], columns="capacity_label", values="cell", aggfunc="first")[L.CAP_ORDER]
 V.show(piv, 'P2-T5.df1', hide=[], rename={}, index_names={'measure name': 'measure'}, column_names={'capacity_label': 'capacity'}, values={}, index={}, cells=[], empty_cells=True)
+V.md("fpr.reminder", "*" + L.FPR_REMINDER + "*", {})   # C14

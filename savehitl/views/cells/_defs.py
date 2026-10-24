@@ -31,6 +31,7 @@ def diff_panels(D, BND, comps, measure, title, fname, second_axis=None, pal=None
     gap = measure == "difference_age_gap_abs"
     formula = {("vs_policy_1", 2): "naive-auto", ("vs_policy_1", 3): "deferral-auto", ("vs_policy_2", 3): "deferral-naive"}
     fig, axs = plt.subplots(1, 3, figsize=(16, 4.2), sharey=True)
+    twins, twin_values = [], []
     for ax, team in zip(axs, L.TEAMS):
         ax.axvspan(0.65, 1.0, color="0.92", zorder=0)
         ax.axhline(0, color="k", lw=0.8)
@@ -49,11 +50,20 @@ def diff_panels(D, BND, comps, measure, title, fname, second_axis=None, pal=None
         if second_axis is not None:
             a2 = ax.twinx(); s = second_axis(team); a2.plot(s["cap"], s["point_estimate"], color="tab:green", ls=":", lw=1.5)
             a2.set_ylabel('overall FPR among the alerts (dotted)', color="tab:green", fontsize=8)
+            twins.append(a2); twin_values += [float(x) for x in s["point_estimate"] if x == x]
         ax.set_title(V.txt('panel.team', 'team {team}', {}, team=team)); ax.set_xlabel('capacity')
+    if twins:   # C6: one range for the second axes of all panels, fitted to all their plotted values together, small margin
+        lo, hi = min(twin_values), max(twin_values)
+        pad = 0.05 * (hi - lo) if hi > lo else 0.05
+        for a2 in twins:
+            a2.set_ylim(lo - pad, hi + pad)
     axs[0].set_ylabel(L.AGE_GAP_FORMULA[formula[(comps[0], policy)]] if gap and policy else V.txt('diff.ylabel', '{measure}', {}, measure=L.mname(measure)))
-    axs[0].legend(fontsize=8, loc="best")
+    if twins:   # C18: the legend below the panels, clear of the axis labels
+        fig.legend(*axs[0].get_legend_handles_labels(), loc="upper center", bbox_to_anchor=(0.5, -0.02), ncol=len(comps), fontsize=9, frameon=False)
+    else:
+        axs[0].legend(fontsize=8, loc="best")
     if gap:
-        fig.text(0.5, -0.04, L.FPR_DEFINITION, ha="center", fontsize=9)
+        fig.text(0.5, -0.04 - (0.08 if twins else 0), L.FPR_DEFINITION, ha="center", fontsize=9)
     fig.suptitle(title); L.savefig(fig, fname); plt.show()
 
 
@@ -77,8 +87,14 @@ def stacked(D, comp, parts, names, title, fname):
     fig.suptitle(title); L.savefig(fig, fname); plt.show()
 
 
-def indicator_panels(D, specs, title, fname, extra=None):
-    fig, axs = plt.subplots(1, len(specs) + (1 if extra else 0), figsize=(4.3 * (len(specs) + (1 if extra else 0)), 3.8))
+def indicator_panels(D, specs, title, fname, extra=None, rows=1):
+    n = len(specs) + (1 if extra else 0)
+    if rows == 1:
+        fig, axs = plt.subplots(1, n, figsize=(4.3 * n, 3.8))
+    else:   # round-2 [analyst-40]: panels in `rows` rows, filled row by row, one legend for the whole figure
+        cols = -(-n // rows)
+        fig, axs = plt.subplots(rows, cols, figsize=(4.6 * cols, 3.6 * rows))
+        axs = axs.ravel()
     for ax, (m, lam) in zip(axs, specs):
         for team, col in zip(L.TEAMS, ("tab:blue", "tab:orange", "tab:green")):
             d = D[(D["comparison"] == "level") & (D["team"] == team) & (D["version"] == L.MEAN5) & (D["measure"] == m)]
@@ -90,7 +106,12 @@ def indicator_panels(D, specs, title, fname, extra=None):
         ax.set_xlabel('capacity')
     if extra:
         extra(axs[-1])
-    axs[0].legend(fontsize=7); fig.suptitle(title); L.savefig(fig, fname); plt.show()
+    if rows == 1:
+        axs[0].legend(fontsize=7); fig.suptitle(title)
+    else:
+        fig.legend(*axs[0].get_legend_handles_labels(), loc="lower center", ncol=3, fontsize=9, frameon=False, bbox_to_anchor=(0.5, -0.03))
+        fig.suptitle(title); fig.tight_layout(rect=(0, 0.03, 1, 0.96))
+    L.savefig(fig, fname); plt.show()
 
 
 def p2_load(ax):
@@ -264,7 +285,11 @@ def cap_position(x):
     return float(np.interp(float(x), vals, range(len(vals))))
 
 
-def verdict_colour_grid(T4, BND, comps, title, fname):
+GRID_CAPACITY0 = ("Capacity 0: naive review confirms every alert and analyst-aware deferral is full automation, so these cells follow "
+                  "from the rules (by construction).")   # C3, caption line of each grid of section 4.5
+
+
+def verdict_colour_grid(T4, BND, comps, title, fname, caption=None):
     """[analyst-07]: the descriptive verdict at each capacity (average of the five versions), one panel per measure, one row per
     team (and comparison), capacity across, the realistic range shaded, a tick where the average difference crosses zero."""
     from matplotlib.colors import ListedColormap
@@ -298,5 +323,7 @@ def verdict_colour_grid(T4, BND, comps, title, fname):
     h = [mpatches.Patch(color=c, label=l) for l, c in (("beats", "tab:green"), ("no difference shown", "gold"), ("does worse", "tab:red"))]
     h.append(plt.Line2D([], [], color="k", marker="|", ms=12, mew=2.5, ls="none", label="the average difference crosses zero"))
     fig.legend(handles=h, loc="lower center", ncol=4, fontsize=9, frameon=False, bbox_to_anchor=(0.5, -0.02))
+    if caption:
+        fig.text(0.5, -0.045, caption, ha="center", va="top", fontsize=9)
     fig.suptitle(title, fontsize=11)
     fig.tight_layout(rect=(0, 0.03, 1, 1)); L.savefig(fig, fname); plt.show()

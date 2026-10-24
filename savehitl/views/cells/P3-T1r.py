@@ -6,7 +6,7 @@ L.save(rk7, "P3-T1b_ranking_quality_per_model_month7.csv"); L.save(rk6, "P3-T1b_
 byv = L.csv("s_ranking", dtype={"team_version": str}).set_index("team_version")
 L.save(byv.reset_index(), "P3-T1c_ranking_quality_by_version.csv")
 # [analyst-06]: the table is replaced by a dot-and-range graph (average of the version's 50 models; lowest to highest).
-fig, ax = plt.subplots(figsize=(8.5, 4.2))
+fig, ax = plt.subplots(figsize=(8.5, 4.6))
 x = np.arange(len(byv))
 for k, (mon, name, dx, filled) in enumerate(((7, "test month", -0.12, True), (6, "previous month", 0.12, False))):
     av = byv[f"month {mon} average of 50 models"].astype(float).values
@@ -15,7 +15,8 @@ for k, (mon, name, dx, filled) in enumerate(((7, "test month", -0.12, True), (6,
     ax.plot(x + dx, av, "o", ms=8, color="tab:blue", markerfacecolor="tab:blue" if filled else "white", markeredgewidth=1.6,
             label=f"{name}: average of the version's 50 models (bar: lowest to highest)")
 ax.axhline(0.5, color="k", ls="--", lw=1, label="0.5: chance")
-ax.set_xticks(x); ax.set_xticklabels([f"version {v}" for v in byv.index]); ax.set_ylabel("ranking quality (weighted area under the ROC curve)")
+ax.set_xticks(x); ax.set_xticklabels([f"version {v}" if str(v).isdigit() else str(v) for v in byv.index])   # C18: "all 250 models"
+ax.set_ylabel("ranking quality\n(weighted area under the ROC curve)")   # C18: in two lines, not clipped
 ax.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.0, 1.0), frameon=False)
 ax.set_title("How well the router ranks, per team version", fontsize=10)
 L.savefig(fig, "P3-T1r_ranking_quality.png"); plt.show()

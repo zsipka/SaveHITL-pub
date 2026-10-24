@@ -40,7 +40,8 @@ def main():
     pd.set_option("display.max_rows", 400); pd.set_option("display.max_columns", 60); pd.set_option("display.width", 250)
     pd.set_option("display.max_colwidth", 120)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
-    ns = {"L": L, "V": V, "np": np, "pd": pd, "plt": plt, "json": json, "os": os, "display": V.display, "Markdown": V.Markdown}
+    ns = {"L": L, "V": V, "np": np, "pd": pd, "plt": plt, "json": json, "os": os, "display": V.display, "Markdown": V.Markdown,
+          "PART": spec.get("part", "all")}   # "graph" or "tables" for an item shown in two places; "all" otherwise
     with contextlib.redirect_stdout(V.C):
         run_cells(ns, ["_defs", "_defs_grid"])
         for d in spec["data"]:

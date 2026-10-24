@@ -8,6 +8,7 @@ t["value (95% interval)"] = [f"{L.fmt(v)} ({L.fmt(lo)} to {L.fmt(hi)})" for v, l
 t["label"] = L.L_P1
 piv = t.pivot_table(index=["measure", "policy"], columns="lambda", values="value (95% interval)", aggfunc="first")
 V.show(piv, 'P1-T2.df1', hide=[], rename={}, index_names={}, column_names={'lambda': 'cost ratio'}, values={}, index={'policy 1': 'full automation'}, cells=[], empty_cells=True)
+V.md("fpr.reminder", "*" + L.FPR_REMINDER + "*", {})   # C14
 L.save(t[["policy", "lambda", "is_anchor", "measure", "value", "ci95_low", "ci95_high", "B", "resamples_used", "bootstrap_seed", "label", "run_id"]], "P1-T2_baseline_by_cost_ratio.csv")
 share_row = t[(t["measure"] == L.mname("regulatory_exposure_miss_rate")) & (t["policy"] == "policy 1")].iloc[0]
-V.md('P1-T2.share-sentence', 'Full automation: {let_through:.1f}% of the frauds among the flagged applications were let through, that is, {stopped:.1f}% were stopped. The decisions do not change with the cost ratio; only expected loss does.', {}, let_through=100*share_row['value'], stopped=100*(1-share_row['value']))
+V.md('P1-T2.share-sentence', 'Full automation: its FNR is {let_through:.1f}%: of the frauds among the flagged applications, {let_through:.1f}% were accepted and {stopped:.1f}% rejected. The decisions do not change with the cost ratio; only expected loss does.', {}, let_through=100*share_row['value'], stopped=100*(1-share_row['value']))   # C9

@@ -1,6 +1,6 @@
 # SaveHITL-pub
 
-> **Draft.** The notebook is in the repository unexecuted; its run-dependent text is still to be written. Sections marked **[TO FILL]** or **[TO CONFIRM]** are not final.
+> **Draft.** The notebooks are in the repository unexecuted; their run-dependent text is still to be written. Sections marked **[TO FILL]** or **[TO CONFIRM]** are not final.
 
 **Purpose:** the code and the executed notebook that re-run the experiments of the project "Save the human in the loop" on the public FiFAR dataset.
 
@@ -8,7 +8,8 @@
 
 | Path | What it is |
 |---|---|
-| `savehitl_results.ipynb` | The notebook. It re-runs the whole chain section by section and shows the tables and graphs [TO CONFIRM: the executed copy from the final Colab run replaces the unexecuted one] |
+| `savehitl_results.ipynb` | The notebook, short version: the deciding results first, then the main descriptive results. It re-runs the whole chain section by section and shows the tables and graphs [TO CONFIRM: the executed copies from the final Colab run replace the unexecuted ones] |
+| `savehitl_results_long.ipynb` | The notebook, long version: the short version plus an appendix of further descriptive results. It runs the same computation and writes the same table and graph files |
 | `savehitl/` | The one library the notebook imports: what the notebook's cells call (`notebook.py`), set-up (`runner.py`), memory record (`memory.py`), router refit (`router.py`), the steps of the chain (`steps/`), the bootstrap and verdict code (`boot/`), the tables and graphs (`views/`), and the description of the run's outputs (`returned.py`) |
 | `patches/` | Four patch files applied to OpenL2D at commit `cfe5fd0` before the run: `0001` and `0002` (the reviewers' regeneration), `0006` and `0009` (the router's training files for the drawn teams). Each patched file is checked by sha256 before and after |
 | `environment.colab.yml` | The pinned environment: Python 3.7.9, NumPy 1.21.6, SciPy 1.7.3, pandas 1.3.5, scikit-learn 0.24.2, LightGBM 3.2.1, pyarrow 12.0.1 |
@@ -27,7 +28,7 @@ The notebook is tested on Google Colab. This is the supported way to run it.
 2. In the settings cell near the top, set `FIFAR_DOWNLOAD_ALLOWED = True` to give permission to download FiFAR from figshare; with `False` nothing is downloaded and the run stops at the set-up. In the switch cell, `HYPERPARAM_TUNE = False` refits the 250 router models from the study's chosen settings; `True` runs the framework's full settings search instead (120 trials per model; more than one free Colab session).
 3. Run all cells (Runtime > Run all). If the notebook was opened on its own, the first code cell clones this repository into the session. The next cell installs the pinned environment, fetches OpenL2D at commit `cfe5fd0` with its archive `l2d_benchmarking.zip` and applies the patches, and downloads FiFAR; every file is checked by sha256. Each results section then runs the steps of the chain it needs, in order, and shows its tables and graphs. Table files go to `tables/` and graph files to `figures/`.
 4. The notebook's table "Run time and memory of this run", at the end of its technical section, gives each step's time and peak memory, measured during the run.
-5. The last cell writes `savehitl_returned_outputs.zip`, a description of the run's outputs with no case row, and on Colab offers it for download [TO CONFIRM: wording, with the analyst].
+5. The last cell writes `savehitl_returned_outputs.zip` and, on Colab, offers it for download, so that the run's outputs can be kept after the session ends. It holds the run's 28 table files (`tables/`); for each step of the chain, its record (`record.json`) and, for most steps, its summary output files, among them the verdicts, the bootstrap intervals and the list of the 250 refitted router models with their checksums; for each table-and-graph step, its record and manifest (`record.json`, `manifest.json`); the per-column summaries of the run's case-level files (`per_column_summaries.csv`: for columns of numbers, count, sum, sum of absolute values, minimum and maximum; for other columns, count, number of distinct values and a checksum of the values); and the run's logs, including its time and memory records (`logs/`). The minimum and maximum of a column are values of single applications, so for FiFAR's columns they are FiFAR data: the zip is for your own use, and if you pass it on, FiFAR's licence terms apply (see "Data: FiFAR"). It holds no graph file and no case row of FiFAR. The archives of the two notebooks differ only in their table-and-graph folders: 38 for the short notebook, 43 for the long one, whose five extra folders belong to the appendix tables.
 
 **[TO CONFIRM after the final Colab run]** The total run time and the peak memory of a free Colab session.
 
@@ -51,10 +52,6 @@ On other systems, the pinned versions may not be available as packages; the note
 - **The study's internal validation checks.** The run asserts its own consistency step by step and stops on a failed assertion; it does not compare its figures with the study's.
 
 Everything else is computed during the run: the regenerated reviewers, the draw of the teams, the router's training files and models, the three policies, the bootstrap intervals, the verdicts and the summary tables.
-
-## Reproduction tolerance
-
-A re-run should give the study's figures within |x − y| ≤ 1e-5 × max(1, |y|), where y is the study's figure. A different processor or different library builds can change the order of floating-point sums, so the last digits may differ. The notebook does not check this itself.
 
 ## Data: FiFAR
 

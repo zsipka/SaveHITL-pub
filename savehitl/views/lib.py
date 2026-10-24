@@ -225,7 +225,7 @@ T9_ROW_I_NOTE = "Policy 2's overall share for applicants aged 50 or over include
 T9_NOT_DEFINED = "Not defined"
 # P3-F9 labels: policy 3 design section 10, row P3-F9 (line 542), exact text
 F9_C_ZERO = "0 by construction"
-F9_P2_C = "Policy 2: reviewed, outcome fixed by team C's rule; confirmed under policies 1, 2 and 3"
+F9_P2_C = "naive review, 50 or over: reviewed, but team C's rule fixes the outcome; the alert is confirmed under every policy"   # S2-D-444 (1), L8
 F9_B_EQUAL = "identical to team A by construction"
 F9_NOTE = "Policy 2's dashed lines are the same in every panel."
 

@@ -29,3 +29,13 @@ SECTIONS = {
 ITEMS = {c: {"data": s["data"], "cells": [c]} for s in SECTIONS.values() for c in s["cells"]}
 # the item "rows-split" (section 3.3) also writes the table file of P3-T8, which is no longer shown ([analyst-03])
 ITEMS["rows-split"] = {"data": ["p2", "p3"], "cells": ["P3-T8", "rows-split"]}
+# Items shown in two places (round 2): the graph in the results (both notebooks), the tables in the long notebook's
+# appendix. Both parts run the same cell and write the same table files; `PART` selects what is displayed.
+for _c, _t in (("P2-T4", "P2-T4-tables"), ("P3-T4", "P3-T4-tables"), ("P2-F5", "P2-F5-table"), ("P2-F7", "P2-F7-tables"),
+               ("P3-F6", "P3-F6-tables")):
+    ITEMS[_c] = dict(ITEMS[_c], part="graph")
+    ITEMS[_t] = dict(ITEMS[_c], part="tables")
+# Items the short notebook does not show (the long notebook shows them in its appendix). The short notebook runs their
+# views steps without displaying them (`notebook.write_files`), so that both notebooks write the same table and graph files.
+NOT_SHOWN_IN_SHORT = ["P1-T2", "P1-F1", "P2-F1", "P2-F4", "P3-F4", "P2-F2", "P3-F2", "P2-F3", "P3-F3", "P3-T7", "P3-T9",
+                      "rows-0035", "P2-T5", "P3-T5", "P2-F8", "P3-F7"]

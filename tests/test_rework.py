@@ -108,8 +108,12 @@ def test_figure_texts_take_the_display_terminology():
     plt.close(fig)
 
 
-def test_notebook_structure_of_the_rework():
-    cells = _nb()["cells"]
+import pytest
+
+
+@pytest.mark.parametrize("name", ["savehitl_results.ipynb", "savehitl_results_long.ipynb"])
+def test_notebook_structure_of_the_rework(name):
+    cells = json.load(open(os.path.join(ROOT, name), encoding="utf-8"))["cells"]
     md = [c for c in cells if c["cell_type"] == "markdown"]
     text = "\n".join("".join(c["source"]) for c in md)
     for bad in ("Propose to replace", "[analyst-", "[owner-", "S2-D-", "DQ-", "R2-", "[[", "(its own cell)", "## The heavy steps",
@@ -118,13 +122,14 @@ def test_notebook_structure_of_the_rework():
     src = ["".join(c["source"]) for c in cells]
     i = src.index('nb.section("F-data")')
     assert src[i - 1].startswith("These figures summarise FiFAR's `Base.csv` in aggregate")          # legal's sentence directly above
-    for item in ("P2-F10", "P3-F10"):
-        assert "Heavy step" in src[src.index(f'nb.section("{item}")') - 1]
+    for item in ("P2-F10", "P3-F10", "F-months"):                  # round-2 [analyst-33]: the runtime-estimate boxes
+        assert src[src.index(f'nb.section("{item}")') - 1].startswith("> **Runtime estimate (Colab free): ")
+    assert "Heavy step" not in text
     anchors = set(re.findall(r'<a id="([^"]+)"></a>', text))
     for c in md:
         lines = "".join(c["source"]).split("\n")
         for k, line in enumerate(lines):
-            if line.startswith("## ") and line != "## Contents":
+            if (line.startswith("## ") or line.startswith("### ")) and line != "## Contents":
                 assert k > 0 and lines[k - 1].startswith('<a id="'), line
     for link in re.findall(r"\]\(#([^)]+)\)", text):
         assert link in anchors, link

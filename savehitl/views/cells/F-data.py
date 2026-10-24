@@ -56,11 +56,8 @@ for t in ax.get_yticklabels()[:2] + ax.get_xticklabels()[:2]:
 for s in ax.spines.values():
     s.set_visible(False)
 fig.colorbar(im, ax=ax, fraction=0.025, pad=0.01)
-left = ac[~ac["in_map"].astype(bool)]
-why = "; ".join(f"{g}: {', '.join(left.loc[left['reason'] == g, 'column'])}" for g in dict.fromkeys(left["reason"]))
 ax.set_title("D4. Spearman correlation of the label and the numeric features (lower triangle; colour from −1 to +1)", fontsize=10)
-fig.text(0.13, 0.0, "D4. Left out: " + why + ".\nMissing values, as the dataset's documentation defines them, are left out pair by pair.",
-         fontsize=8.5, va="top")
+# round-2 [analyst-36]: the note on left-out features is no longer in the figure; the notebook lists them under it.
 # D5
 ax = fig.add_subplot(gs[1, 2])
 x = np.arange(len(fl))
