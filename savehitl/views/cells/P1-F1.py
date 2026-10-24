@@ -1,7 +1,7 @@
 # Section 6.1: graph P1-F1, the three measures against the cost ratio.
 fig, ax = plt.subplots(1, 3, figsize=(15, 4))
 spec = [("expected_loss_total", 'expected loss (total)'), ("regulatory_exposure_accepted_frauds_count", 'regulatory exposure (accepted frauds)'),
-        ("fairness_exposure_age_gap", 'fairness exposure (age gap)')]
+        ("fairness_exposure_age_gap", 'fairness exposure (age gap; FPR among the alerts)')]
 for a_, (m, title) in zip(ax, spec):
     for pol, st in (("policy_1", "-o"), ("confirm_every_alert", "--s")):
         d = p1[(p1["policy"] == pol) & (p1["measure"] == m)].sort_values("lambda")

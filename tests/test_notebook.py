@@ -121,7 +121,7 @@ def _coverage_faults():
 def test_a_every_built_item_is_in_the_mapping():
     from savehitl.views.sections import ITEMS
     items = _built_items()
-    assert len(items) == 35
+    assert len(items) == 38          # rework: P3-T8 no longer shown; F-months, F-data, P3-F11, P3-T10 added
     missing = [i for i in items if i not in nb.NEEDS]
     assert missing == []
     assert set(nb.NEEDS) <= set(ITEMS)                           # no entry for a name the views step does not know

@@ -5,7 +5,7 @@ for team, ls in (("A", "-"), ("C", "--")):
         d = D2[(D2["comparison"] == "level") & (D2["team"] == team) & (D2["version"] == L.MEAN5) & (D2["measure"] == m)].sort_values("cap")
         axs[0].plot(d["cap"], d["point_estimate"], ls=ls, color=col, label=V.txt('P2-F5.legend-rate', 'team {team}, {measure}', {}, team=team, measure=L.mname(m)))
         axs[0].fill_between(d["cap"], d["ci_low"], d["ci_high"], color=col, alpha=0.1)
-axs[0].set_xlabel('capacity'); axs[0].set_ylabel('false rejection rate'); axs[0].legend(fontsize=9); axs[0].set_title('false rejection rates by age group\n(average of the five versions, 95% band)')
+axs[0].set_xlabel('capacity'); axs[0].set_ylabel('FPR among the alerts'); axs[0].legend(fontsize=9); axs[0].set_title('false rejection rates by age group\n(average of the five versions, 95% band)')
 g = D2[(D2["comparison"] == "C_minus_A") & (D2["version"] == L.MEAN5) & (D2["measure"] == "difference_age_gap_signed")].sort_values("cap")
 g1 = g[g["capacity_label"] == "1.00"]["point_estimate"].iloc[0]
 axs[1].plot(g["cap"], g["point_estimate"], "o-", ms=3, label='observed team C minus team A signed age gap (average of the five versions)')

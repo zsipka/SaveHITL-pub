@@ -60,6 +60,8 @@ class Collector:
         self._add("table", "html", df._repr_html_(), key=key, rows=int(df.shape[0]), columns=int(df.shape[1]))
 
     def figure(self, fig):
+        from . import lib
+        lib.retext_figure(fig)
         b = io.BytesIO()
         fig.savefig(b, format="png", dpi=90, bbox_inches="tight")
         self._add("figure", "png", b.getvalue(), binary=True)
@@ -113,7 +115,8 @@ def _fill(key, template, fmap, fields):
 
 
 def txt(key, template, fmap=None, **fields):
-    return _fill(key, template, fmap, fields)
+    from . import lib
+    return lib.display_text(_fill(key, template, fmap, fields))
 
 
 def say(key, template, fmap=None, **fields):
@@ -156,6 +159,25 @@ def _empty_cells(v):
     return out
 
 
+def _display_terms(v):
+    """The notebook's display terminology (lib.DISPLAY_TERMS) on a display copy: column and index labels, and text cells."""
+    from . import lib
+    import pandas as pd
+    t = lib.display_text
+
+    def lab(x):
+        return tuple(t(y) for y in x) if isinstance(x, tuple) else t(x)
+    v = v.copy()
+    v.columns = pd.MultiIndex.from_tuples([lab(c) for c in v.columns], names=[t(n) for n in v.columns.names]) \
+        if isinstance(v.columns, pd.MultiIndex) else pd.Index([lab(c) for c in v.columns], name=t(v.columns.name))
+    v.index = pd.MultiIndex.from_tuples([lab(c) for c in v.index], names=[t(n) for n in v.index.names]) \
+        if isinstance(v.index, pd.MultiIndex) else pd.Index([lab(c) for c in v.index], name=t(v.index.name))
+    for j in range(v.shape[1]):
+        if v.iloc[:, j].dtype == object:
+            v.iloc[:, j] = [t(x) for x in v.iloc[:, j].tolist()]
+    return v
+
+
 def show(df, key, hide=(), rename=None, index_names=None, column_names=None, values=None, index=None, cells=None, empty_cells=False):
     """Display copy of `df` (see the module text). Columns to hide must exist; value maps and named cells are applied
     where they match and recorded where they do not."""
@@ -188,5 +210,6 @@ def show(df, key, hide=(), rename=None, index_names=None, column_names=None, val
         v.columns = v.columns.set_names([column_names.get(n, n) for n in v.columns.names])
     if empty_cells:
         v = _empty_cells(v)
+    v = _display_terms(v)
     v.attrs["savehitl_view"] = key
     display(v)

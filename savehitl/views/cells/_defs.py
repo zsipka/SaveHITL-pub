@@ -26,8 +26,10 @@ def boundary_table(BND, D, comps):
     return pd.DataFrame(rows)
 
 
-def diff_panels(D, BND, comps, measure, title, fname, second_axis=None, pal=None):
+def diff_panels(D, BND, comps, measure, title, fname, second_axis=None, pal=None, policy=None):
     pal = pal or {"vs_policy_1": "tab:blue", "vs_policy_2": "tab:red"}
+    gap = measure == "difference_age_gap_abs"
+    formula = {("vs_policy_1", 2): "naive-auto", ("vs_policy_1", 3): "deferral-auto", ("vs_policy_2", 3): "deferral-naive"}
     fig, axs = plt.subplots(1, 3, figsize=(16, 4.2), sharey=True)
     for ax, team in zip(axs, L.TEAMS):
         ax.axvspan(0.65, 1.0, color="0.92", zorder=0)
@@ -37,7 +39,8 @@ def diff_panels(D, BND, comps, measure, title, fname, second_axis=None, pal=None
             for ver in L.VERSIONS:
                 dv = d[d["version"] == ver].sort_values("cap"); ax.plot(dv["cap"], dv["point_estimate"], color=pal[comp], lw=0.6, alpha=0.5)
             dm = d[d["version"] == L.MEAN5].sort_values("cap")
-            ax.plot(dm["cap"], dm["point_estimate"], color=pal[comp], lw=2, label=V.txt('diff.legend', '{comparison} (average of the five versions)', {'comparison': {'against policy 1': 'against full automation', 'against policy 2': 'against naive review'}}, comparison=L.COMPARISON_NAMES[comp]))
+            ax.plot(dm["cap"], dm["point_estimate"], color=pal[comp], lw=2, label=V.txt('diff.legend', '{comparison} (average of the five versions)', {'comparison': {'against policy 1': 'against full automation', 'against policy 2': 'against naive review'}}, comparison=L.COMPARISON_NAMES[comp])
+                    + (": " + L.AGE_GAP_FORMULA[formula[(comp, policy)]] if gap and policy else ""))
             ax.fill_between(dm["cap"], dm["ci_low"], dm["ci_high"], color=pal[comp], alpha=0.2)
             b = BND[(BND["comparison"] == comp) & (BND["team"] == team) & (BND["version"].astype(str) == L.MEAN5) & (BND["measure"] == measure)]
             if len(b):
@@ -45,9 +48,12 @@ def diff_panels(D, BND, comps, measure, title, fname, second_axis=None, pal=None
                     ax.axvline(x, color=pal[comp], ls="--", lw=1)
         if second_axis is not None:
             a2 = ax.twinx(); s = second_axis(team); a2.plot(s["cap"], s["point_estimate"], color="tab:green", ls=":", lw=1.5)
-            a2.set_ylabel('overall false rejection rate (dotted)', color="tab:green", fontsize=8)
+            a2.set_ylabel('overall FPR among the alerts (dotted)', color="tab:green", fontsize=8)
         ax.set_title(V.txt('panel.team', 'team {team}', {}, team=team)); ax.set_xlabel('capacity')
-    axs[0].set_ylabel(V.txt('diff.ylabel', '{measure}', {}, measure=L.mname(measure))); axs[0].legend(fontsize=8, loc="best")
+    axs[0].set_ylabel(L.AGE_GAP_FORMULA[formula[(comps[0], policy)]] if gap and policy else V.txt('diff.ylabel', '{measure}', {}, measure=L.mname(measure)))
+    axs[0].legend(fontsize=8, loc="best")
+    if gap:
+        fig.text(0.5, -0.04, L.FPR_DEFINITION, ha="center", fontsize=9)
     fig.suptitle(title); L.savefig(fig, fname); plt.show()
 
 
@@ -67,7 +73,7 @@ def stacked(D, comp, parts, names, title, fname):
             base += np.where(y > 0, y, 0); basen += np.where(y < 0, y, 0)
         ax.axhline(0, color="k", lw=0.8); ax.set_xticks(range(len(L.CAP_ORDER))); ax.set_xticklabels(L.CAP_ORDER, rotation=90, fontsize=7)
         ax.set_title(V.txt('panel.team', 'team {team}', {}, team=team)); ax.set_xlabel('capacity')
-    axs[0].set_ylabel('expected loss, difference'); axs[0].legend(fontsize=8)
+    axs[0].set_ylabel('misclassification cost, difference'); axs[0].legend(fontsize=8)
     fig.suptitle(title); L.savefig(fig, fname); plt.show()
 
 
@@ -187,3 +193,110 @@ def t9_view(team, version=L.MEAN5):
     cols = ["capacity_label", "share kind", "policy", "share, 50 or over", "share, under 50", "difference (percentage points)", "counts, 50 or over (sent / alerts x routings)",
             "counts, under 50 (sent / alerts x routings)"] + (["seed range, 50 or over", "seed range, under 50"] if version != L.MEAN5 else []) + ["cell labels"]
     return v[cols]
+
+# ------------------------------------------------------------------ section 6.5: verdict colour grid and generated ranges
+GRID_MEASURES = [("difference_expected_loss", "misclassification cost"), ("difference_accepted_frauds", "frauds accepted"),
+                 ("difference_age_gap_abs", "the size of the age gap")]
+VERDICT_CODE = {"beats": 1, "no difference shown": 0, "does worse": -1}
+
+
+def verdict_of(cell):
+    """The verdict text of a boundary-table cell ("beats (deciding verdict …)" -> "beats"); None if empty."""
+    if not isinstance(cell, str) or not cell:
+        return None
+    for v in VERDICT_CODE:
+        if cell == v or cell.startswith(v + " ("):
+            return v
+    return None
+
+
+def cap_word(c):
+    return "1" if c == "1.00" else c
+
+
+def ranges_text(caps):
+    """[analyst-42]: contiguous ranges of the 22-point grid, in increasing order, joined by "and"."""
+    idx = sorted(L.CAP_ORDER.index(c) for c in caps)
+    if len(idx) == len(L.CAP_ORDER):
+        return "at every capacity"
+    if idx == list(range(1, len(L.CAP_ORDER))):
+        return "at every capacity above 0"
+    runs, cur = [], [idx[0]]
+    for i in idx[1:]:
+        if i == cur[-1] + 1:
+            cur.append(i)
+        else:
+            runs.append(cur); cur = [i]
+    runs.append(cur)
+    parts = [f"at {cap_word(L.CAP_ORDER[r[0]])}" if len(r) == 1 else f"from {cap_word(L.CAP_ORDER[r[0]])} to {cap_word(L.CAP_ORDER[r[-1]])}" for r in runs]
+    return " and ".join(parts)
+
+
+def range_sentence(v, comp_label, policy_name, against, measure, short):
+    """One sentence per measure and comparison, from the verdict at each capacity (average of the five versions)."""
+    clauses = []
+    for k, team in enumerate(L.TEAMS):
+        row = v[(v["comparison"] == comp_label) & (v["team"] == team) & (v["measure"] == L.mname(measure))]
+        assert len(row) == 1, (comp_label, team, measure, len(row))
+        row = row.iloc[0]
+        by = {"beats": [], "does worse": []}
+        for c in L.CAP_ORDER:
+            w = verdict_of(row.get(c))
+            if w in by:
+                by[w].append(c)
+        bits = []
+        if by["beats"]:
+            bits.append(("beats " + against if k == 0 else "beats") + f" with team {team} " + ranges_text(by["beats"]) if k == 0 else "beats " + ranges_text(by["beats"]))
+        if by["does worse"]:
+            if k == 0 and not bits:
+                bits.append(f"does worse than {against} with team {team} " + ranges_text(by["does worse"]))
+            else:
+                bits.append("does worse " + ranges_text(by["does worse"]))
+        if not bits:
+            bits.append(f"shows no difference from {against} with team {team} at any capacity" if k == 0 else "shows no difference at any capacity")
+        clauses.append(" and ".join(bits) if k == 0 else f"with team {team}, it " + " and ".join(bits))
+    return f"On {short}, {policy_name} " + "; ".join(clauses) + ". Elsewhere no difference is shown."
+
+
+def cap_position(x):
+    """Position of a capacity value on the 22-point grid's index axis (linear between neighbouring points)."""
+    vals = [L.cap_value(c) for c in L.CAP_ORDER]
+    return float(np.interp(float(x), vals, range(len(vals))))
+
+
+def verdict_colour_grid(T4, BND, comps, title, fname):
+    """[analyst-07]: the descriptive verdict at each capacity (average of the five versions), one panel per measure, one row per
+    team (and comparison), capacity across, the realistic range shaded, a tick where the average difference crosses zero."""
+    from matplotlib.colors import ListedColormap
+    import matplotlib.patches as mpatches
+    v = T4[T4["version"] == L.MEAN5]
+    rows = [(c, t) for c in comps for t in L.TEAMS]
+    cname = {c: L.COMPARISON_NAMES[c] for c in comps}
+    cmap = ListedColormap(["tab:red", "gold", "tab:green"])
+    fig, axs = plt.subplots(len(GRID_MEASURES), 1, figsize=(15, 0.5 * len(rows) * len(GRID_MEASURES) + 2.6))
+    for ax, (m, short) in zip(axs, GRID_MEASURES):
+        M = np.full((len(rows), len(L.CAP_ORDER)), np.nan)
+        for i, (c, t) in enumerate(rows):
+            r = v[(v["comparison"] == cname[c]) & (v["team"] == t) & (v["measure"] == L.mname(m))]
+            assert len(r) == 1, (c, t, m)
+            r = r.iloc[0]
+            for j, cap in enumerate(L.CAP_ORDER):
+                w = verdict_of(r.get(cap))
+                M[i, j] = VERDICT_CODE[w] if w else np.nan
+            b = BND[(BND["comparison"] == c) & (BND["team"] == t) & (BND["version"].astype(str) == L.MEAN5) & (BND["measure"] == m)]
+            if len(b):
+                for x in json.loads(b.iloc[0]["point_boundary_capacities"]):
+                    ax.plot([cap_position(x)], [i], marker="|", ms=16, mew=2.5, color="k")
+        ax.imshow(np.ma.masked_invalid(M), cmap=cmap, vmin=-1, vmax=1, aspect="auto")
+        ax.axvspan(L.CAP_ORDER.index("0.65") - 0.5, len(L.CAP_ORDER) - 0.5, ymin=0, ymax=1, facecolor="none", edgecolor="k", lw=1.5, hatch="")
+        ax.set_yticks(range(len(rows)))
+        ax.set_yticklabels([f"team {t}" + ("" if len(comps) == 1 else ", " + {"vs_policy_1": "against full automation", "vs_policy_2": "against naive review"}[c])
+                            for c, t in rows], fontsize=8.5)
+        ax.set_xticks(range(len(L.CAP_ORDER))); ax.set_xticklabels([cap_word(c) for c in L.CAP_ORDER], rotation=90, fontsize=8)
+        ax.set_title(short, fontsize=10, loc="left")
+    axs[-1].set_xlabel("capacity (realistic range 0.65 to 1 framed)")
+    h = [mpatches.Patch(color=c, label=l) for l, c in (("beats", "tab:green"), ("no difference shown", "gold"), ("does worse", "tab:red"))]
+    h.append(plt.Line2D([], [], color="k", marker="|", ms=12, mew=2.5, ls="none", label="the average difference crosses zero"))
+    fig.legend(handles=h, loc="lower center", ncol=4, fontsize=9, frameon=False, bbox_to_anchor=(0.5, -0.02))
+    fig.suptitle(title, fontsize=11)
+    fig.tight_layout(rect=(0, 0.03, 1, 1)); L.savefig(fig, fname); plt.show()

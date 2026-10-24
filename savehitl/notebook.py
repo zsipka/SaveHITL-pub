@@ -23,6 +23,7 @@ TUNE = None
 # step -> (module, arguments as (flag, value) with "@step" for that step's output folder and "@step/file" for a file in
 # it). In chain order; `section` runs each step once, after the steps it reads.
 STEPS = [
+    ("applications", "applications", []),
     ("generator", "generator", []),
     ("draw", "draw", []),
     ("policy1", "policy1", []),
@@ -43,13 +44,16 @@ STEPS = [
     ("ranking", "ranking", [("--generator", "@generator"), ("--draw", "@draw"), ("--router", "@router"), ("--predict", "@predict")]),
     ("summaries", "summaries", [("--generator", "@generator"), ("--draw", "@draw"), ("--policy2", "@policy2"), ("--policy3", "@policy3"),
                                 ("--ranking", "@ranking")]),
+    ("descriptive", "descriptive", [("--policy1", "@policy1"), ("--policy2", "@policy2"), ("--policy3", "@policy3"),
+                                    ("--generator", "@generator"), ("--summaries", "@summaries")]),
 ]
-LABELS = {"generator": "regenerating the 50 reviewers", "draw": "drawing the five teams", "policy1": "policy 1, full automation",
+LABELS = {"applications": "the applications: aggregate figures of Base.csv", "generator": "regenerating the 50 reviewers", "draw": "drawing the five teams", "policy1": "policy 1, full automation",
           "policy1_intervals": "policy 1, ranges (1,000 re-draws)", "policy2": "policy 2, naive review (replay)",
           "bootstrap2": "policy 2, re-drawing the cases (50,000)", "verdicts2": "policy 2, verdicts",
           "train_alert": "router's training files", "router": "router's 250 models", "predict": "router's scores on the test month",
           "policy3": "policy 3, analyst-aware deferral (routing and replay)", "bootstrap3": "policy 3, re-drawing the cases (50,000)",
           "verdicts3": "policy 3, verdicts", "ranking": "router's ranking quality", "summaries": "summary tables",
+          "descriptive": "descriptive figures: age groups, reviewers and Classifier h on the test month",
           "environment": "environment: Python 3.7.9 and the pinned versions", "framework": "framework: OpenL2D at cfe5fd0 with the patches",
           "fifar": "FiFAR: download and checks"}
 # item -> the steps whose outputs the item's views read (its shared loading cells and its own cell, `views/sections.py`);
@@ -59,14 +63,17 @@ _P1 = ["policy1_intervals"]                    # loading cell p1
 _P2 = ["policy2", "verdicts2"]                 # loading cell p2
 _P3 = ["policy3", "verdicts3"]                 # loading cell p3
 NEEDS = {
+    "F-months": ["applications"],
+    "F-data": ["applications"],
     "P2-F10": _P2,
     "P3-F10": _P2 + _P3,
+    "P3-F11": _P2 + _P3 + ["applications", "descriptive"],
     "P3-F4": _P2 + _P3,
     "P3-T8": _P2 + _P3,
     "rows-split": _P2 + _P3,
     "P3-T1": _P2 + _P3,
     "P3-T1r": _P2 + _P3 + ["ranking", "summaries"],
-    "P2-T1": _P2 + ["summaries"],
+    "P2-T1": _P2 + ["summaries", "descriptive"],
     "P1-T2": _P1,
     "P1-F1": _P1,
     "P2-F1": _P2 + _P3,
@@ -76,6 +83,7 @@ NEEDS = {
     "P3-F2": _P2 + _P3,
     "P2-F3": _P2 + _P3,
     "P3-F3": _P2 + _P3,
+    "P3-T10": _P2 + _P3 + ["applications", "descriptive"],
     "P2-T4": _P2 + _P3,
     "P3-T4": _P2 + _P3,
     "P2-F5": _P2 + _P3,

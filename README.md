@@ -70,7 +70,9 @@ A re-run should give the study's figures within |x − y| ≤ 1e-5 × max(1, |y|
   volume 12, article number 506, https://doi.org/10.1038/s41597-025-04664-y.
 - **How it is used:** the notebook downloads FiFAR from figshare and uses it
   unmodified. This repository does not hold or pass on any FiFAR file or
-  case row.
+  case row. The notebook's saved outputs include aggregate statistics of FiFAR's
+  `Base.csv` (rates, counts and correlations); they include no case row or
+  individual value.
 - **Source of `Base.csv`:** the Bank Account Fraud dataset (Kaggle,
   `sgpjesus/bank-account-fraud-dataset-neurips-2022`), which Kaggle states is
   under CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAlike

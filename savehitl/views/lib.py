@@ -55,7 +55,20 @@ KEYS = {
     "s_access_by_age": ("summaries", "P3-T9_access_by_age.csv"),
     "s_access_per_seed": ("summaries", "P3-T9a_per_seed.csv"),
     "s_ranking": ("summaries", "P3-T1_ranking_month6_month7.csv"),
+    # aggregate figures of the applications (step applications) and descriptive figures (step descriptive)
+    "a_month": ("applications", "applications_by_month.csv"),
+    "a_age": ("applications", "applications_by_age.csv"),
+    "a_month_age": ("applications", "applications_by_month_age.csv"),
+    "a_spearman": ("applications", "applications_spearman.csv"),
+    "a_columns": ("applications", "applications_columns.csv"),
+    "a_flag": ("applications", "alert_model_flag_by_age.csv"),
+    "a_test_month": ("applications", "test_month_by_age.csv"),
+    "d_fpfn": ("descriptive", "fpr_fnr_by_age_075.csv"),
+    "d_reviewers": ("descriptive", "reviewers_month7.csv"),
+    "d_roc": ("descriptive", "classifier_roc_month7.csv"),
+    "d_point": ("descriptive", "classifier_point_month7.csv"),
 }
+MIN_GROUP = 10       # no figure over applications from fewer than 10 (the aggregate figures' safeguard)
 _CHECKED = set()
 
 
@@ -225,7 +238,59 @@ def save(df, name, index=False):
 
 
 def savefig(fig, name):
+    retext_figure(fig)
     fig.savefig(os.path.join(OUT_FIGURES, name), dpi=110, bbox_inches="tight")
+
+
+# ------------------------------------------------------------------ display terminology (notebook display only)
+# The notebook displays "misclassification cost" for the study's "expected loss", FPR for "false rejection rate", FNR for
+# "miss rate" and FP for a count of false rejections. Applied to what is displayed only (graph texts and the headers and
+# texts of displayed tables); the files in `tables/` and every step output keep the study's internal names.
+DISPLAY_TERMS = [
+    ("expected-loss difference", "misclassification-cost difference"), ("Expected-loss", "Misclassification-cost"),
+    ("expected-loss", "misclassification-cost"), ("Expected loss", "Misclassification cost"), ("expected loss", "misclassification cost"),
+    ("Loss avoided per review", "Cost avoided per review"), ("loss avoided per review", "cost avoided per review"),
+    ("overall false rejection rates", "overall FPRs"), ("overall false rejection rate", "overall FPR"),
+    ("false rejection rate of legitimate applicants aged 50 or over", "FPR₅₀₊"),
+    ("false rejection rate of legitimate applicants under 50", "FPR<₅₀"),
+    ("false rejection rate, aged 50 or over", "FPR₅₀₊"), ("false rejection rate, under 50", "FPR<₅₀"),
+    ("False rejection rates", "FPRs"), ("false rejection rates", "FPRs"), ("False rejection rate", "FPR"), ("false rejection rate", "FPR"),
+    ("false rejections aged 50 or over", "FP among applicants aged 50 or over"), ("false rejections of legitimate applicants aged 50 or over",
+     "FP among applicants aged 50 or over"), ("False rejections", "FP"), ("false rejections", "FP"),
+    ("regulatory exposure (miss rate)", "regulatory exposure (FNR)"), ("miss rate", "FNR"),
+]
+
+
+def display_text(s):
+    if not isinstance(s, str):
+        return s
+    for a, b in DISPLAY_TERMS:
+        s = s.replace(a, b)
+    return s
+
+
+def retext_figure(fig):
+    """Applies the display terminology to every text of a figure (titles, axis labels, ticks, legends, annotations)."""
+    import matplotlib.text as mtext
+    for t in fig.findobj(mtext.Text):
+        old = t.get_text()
+        new = display_text(old)
+        if new != old:
+            t.set_text(new)
+
+
+AGE_GAP_FORMULA = {   # [analyst-18]: the size of the age gap as the difference of the two policies' sizes, policies as subscripts
+    "naive-auto": r"$|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{\mathrm{naive}}-|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{\mathrm{auto}}$",
+    "deferral-auto": r"$|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{\mathrm{deferral}}-|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{\mathrm{auto}}$",
+    "deferral-naive": r"$|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{\mathrm{deferral}}-|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{\mathrm{naive}}$",
+    "B-A": r"$|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{B}-|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{A}$",
+    "C-A": r"$|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{C}-|\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50}|_{A}$",
+    "signed C-A": r"$(\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50})_{C}-(\mathrm{FPR}_{50+}-\mathrm{FPR}_{<50})_{A}$",
+}
+FPR_DEFINITION = ("FPR among the alerts: the share of legitimate applicants in the alerts whose application is rejected (wrongly "
+                  "rejected ÷ all legitimate), in the age group shown (50 or over; under 50). |…| is the size of the gap. Below zero: "
+                  "the first policy's gap is closer to zero.")
+FPR_REMINDER = "FPR among the alerts."
 
 
 def fmt(x, nd=4):

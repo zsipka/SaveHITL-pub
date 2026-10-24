@@ -4,8 +4,9 @@
 `cells`: the files under `cells/` executed in order, each one table, graph or group of them (the study's item names).
 """
 SECTIONS = {
+    "data": {"data": [], "cells": ["F-months", "F-data"]},
     "3.1": {"data": ["p2"], "cells": ["P2-F10"]},
-    "3.2": {"data": ["p2", "p3"], "cells": ["P3-F10"]},
+    "3.2": {"data": ["p2", "p3"], "cells": ["P3-F10", "P3-F11"]},
     "3.3": {"data": ["p2", "p3"], "cells": ["P3-F4", "P3-T8", "rows-split"]},
     "4.1": {"data": ["p2", "p3"], "cells": ["P3-T1", "P3-T1r"]},
     "5.1": {"data": ["p2"], "cells": ["P2-T1"]},
@@ -13,7 +14,7 @@ SECTIONS = {
     "6.2a": {"data": ["p2", "p3"], "cells": ["P2-F1", "P3-F1"]},
     "6.2b": {"data": ["p2"], "cells": ["P2-F4"]},
     "6.3": {"data": ["p2", "p3"], "cells": ["P2-F2", "P3-F2"]},
-    "6.4": {"data": ["p2", "p3"], "cells": ["P2-F3", "P3-F3"]},
+    "6.4": {"data": ["p2", "p3"], "cells": ["P2-F3", "P3-F3", "P3-T10"]},
     "6.5": {"data": ["p2", "p3"], "cells": ["P2-T4", "P3-T4"]},
     "6.6": {"data": ["p2", "p3"], "cells": ["P2-F5", "P3-T7"]},
     "6.7": {"data": [], "cells": ["P3-T9", "P3-F9"]},
@@ -26,3 +27,5 @@ SECTIONS = {
 }
 # single items, so that a graph can be shown with its own summary below it (entry 9)
 ITEMS = {c: {"data": s["data"], "cells": [c]} for s in SECTIONS.values() for c in s["cells"]}
+# the item "rows-split" (section 3.3) also writes the table file of P3-T8, which is no longer shown ([analyst-03])
+ITEMS["rows-split"] = {"data": ["p2", "p3"], "cells": ["P3-T8", "rows-split"]}

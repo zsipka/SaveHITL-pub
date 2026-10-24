@@ -4,8 +4,8 @@
 # diamonds; the two results fixed by construction (route P2-K) hollow, the signed age gap labelled "signed". Policy 3:
 # the three comparisons against naive review as squares with a dark blue edge and range. Drawn from the deciding table
 # as the verdict step wrote it; nothing is computed.
-GRID_ROWS = [("difference_expected_loss", "expected loss, difference"), ("difference_accepted_frauds", "frauds accepted, difference"),
-             ("difference_age_gap_abs", "size of the age gap, difference")]
+GRID_ROWS = [("difference_expected_loss", "misclassification cost, difference"), ("difference_accepted_frauds", "frauds accepted, difference"),
+             ("difference_age_gap_abs", "size of the age gap, difference")]   # the age-gap row is labelled by its formula ([analyst-18])
 VERDICT_COLOUR = {"beats": "tab:green", "does worse": "tab:red", "no difference shown": "goldenrod"}
 
 
@@ -15,11 +15,11 @@ def deciding_grid(DEC, policy, title, fname):
     d["cap"] = d["capacity_label"].map(L.cap_value)
     d["comparison"] = d["comparison"].astype(int)
     vs_auto = {1, 2, 3}
-    fig, axs = plt.subplots(3, 3, figsize=(16, 11), sharex=True)
+    fig, axs = plt.subplots(3, 3, figsize=(16, 11), sharex=True, sharey="row")   # one scale per measure, shared by the teams
     for i, (m, mlabel) in enumerate(GRID_ROWS):
         for j, team in enumerate(L.TEAMS):
             ax = axs[i, j]
-            ax.axhline(0, color="k", lw=0.8)
+            ax.axhline(0, color="k", lw=0.9, ls="--")      # dashed zero line (owner); zero stays in view
             sel = d[(d["team"] == team) & ((d["measure"] == m) | ((m == "difference_age_gap_abs") & (d["measure"] == "difference_age_gap_signed")))]
             for _, r in sel.iterrows():
                 col = VERDICT_COLOUR.get(r["verdict"], "0.5")
@@ -42,17 +42,22 @@ def deciding_grid(DEC, policy, title, fname):
             if i == 0:
                 ax.set_title(f"team {team}")
             if j == 0:
-                ax.set_ylabel(mlabel)
+                ax.set_ylabel(L.AGE_GAP_FORMULA["naive-auto" if policy == 2 else "deferral-auto"] if m == "difference_age_gap_abs" else mlabel,
+                              fontsize=10 if m == "difference_age_gap_abs" else None)
             if i == 2:
                 ax.set_xlabel("capacity")
     h = [mlines.Line2D([], [], color=c, marker="o", ls="none", label=v) for v, c in VERDICT_COLOUR.items()]
     h.append(mlines.Line2D([], [], color="0.3", marker="o", ls="none", label="against full automation"))
     if policy == 2:
-        h.append(mlines.Line2D([], [], color="0.3", marker="D", ls="none", label="team B or C against team A, both at 0.75"))
-        h.append(mlines.Line2D([], [], color="0.3", marker="o", markerfacecolor="none", ls="none", label="fixed by construction; not a finding"))
+        h.append(mlines.Line2D([], [], color="0.3", marker="D", ls="none", label="team B or C against team A, both at 0.75 (age gap: "
+                                                                                      + L.AGE_GAP_FORMULA["C-A"].replace("C}", "B\\ \\mathrm{or}\\ C}") + ")"))
+        h.append(mlines.Line2D([], [], color="0.3", marker="o", markerfacecolor="none", ls="none", label="fixed by construction; not a finding ("
+                                                                                                         "\"signed\": " + L.AGE_GAP_FORMULA["signed C-A"] + ")"))
     else:
-        h.append(mlines.Line2D([], [], color="0.3", marker="s", markeredgecolor="navy", ls="none", label="against naive review"))
-    fig.legend(handles=h, loc="lower center", ncol=len(h), fontsize=9, frameon=False, bbox_to_anchor=(0.5, -0.01))
+        h.append(mlines.Line2D([], [], color="0.3", marker="s", markeredgecolor="navy", ls="none", label="against naive review (age gap: "
+                                                                                                     + L.AGE_GAP_FORMULA["deferral-naive"] + ")"))
+    fig.legend(handles=h, loc="lower center", ncol=3, fontsize=9, frameon=False, bbox_to_anchor=(0.5, -0.035))
+    fig.text(0.5, -0.07, L.FPR_DEFINITION, ha="center", fontsize=9, wrap=True)
     fig.suptitle(title)
     fig.tight_layout(rect=(0, 0.03, 1, 0.97))
     L.savefig(fig, fname)
