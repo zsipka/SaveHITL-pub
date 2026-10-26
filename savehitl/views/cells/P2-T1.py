@@ -29,7 +29,7 @@ fig, ax = plt.subplots(figsize=(7.6, 7))
 ax.plot([0, 1], [0, 1], color="0.7", lw=1, ls=":")
 ax.plot(roc["fpr"], roc["tpr"], color="k", lw=1.5, label="Classifier h: ROC curve")
 xs = np.array([0.0, 1.0])
-ax.plot(xs, pt["tpr"] + slope * (xs - pt["fpr"]), "k--", lw=1, label=f"equal misclassification cost at cost ratio {pt['lambda']:g} (slope {slope:.2f})")
+ax.plot(xs, pt["tpr"] + slope * (xs - pt["fpr"]), "k--", lw=1, label=("equal misclassification cost" if np.isclose(pt["lambda"], 0.057) else f"equal misclassification cost at cost ratio {pt['lambda']:g}") + f" (slope {slope:.2f})")   # S2-D-476: 0.057 not repeated
 cmap = plt.get_cmap("tab10")
 for k, ver in enumerate(L.VERSIONS):
     d = rv[rv["version"] == ver]

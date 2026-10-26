@@ -24,18 +24,62 @@ def _items(cells):
     return out
 
 
+TECH_TOC = ("- [The switch in this run](#the-switch-in-this-run)\n- [Input checksums](#input-checksums)\n"
+            "- [Map from each item to its design identifier](#map-from-each-item-to-its-design-identifier)\n- [Label texts](#label-texts)\n"
+            "- [The results that decide, in full](#the-results-that-decide-in-full)\n- [Boundary summaries: caveat](#boundary-summaries-caveat)\n"
+            "- [Run time and memory of this run](#run-time-and-memory-of-this-run)\n- [This run's outputs in one archive](#this-runs-outputs-in-one-archive)")
+# Round 5 ([owner-18] cut, [analyst-51]): the short notebook alone points to the long notebook's technical section above
+# its thick line; these are its only text differences from the long notebook's shared cells (short text, long text).
+SHORT_ONLY_TEXT = {
+    "c000": ("are in the technical section of the long notebook, `savehitl_results_long.ipynb`, and are not needed", "are at the end and are not needed"),
+    "c125": ("Run time and memory are in the technical section of the long notebook.", "Run time and memory are in the technical section."),
+    "c126": ("# Technical section\n\n" + TECH_TOC + "\n\n", "# Technical section\n\n"),
+}
+
+
 def test_long_is_short_plus_appendix():
     short, long_ = _cells("savehitl_results.ipynb"), _cells("savehitl_results_long.ipynb")
-    s = [c for c in short if c["id"] != "r2-files"]                     # the short notebook's files cell
+    s = [c for c in short if c["id"] not in ("r2-files", "r5-thick-line")]   # the short notebook's files cell and its thick line
     toc_s, toc_l = s[1], long_[1]
     assert toc_s["id"] == toc_l["id"] == "rw-toc"
-    assert _src(toc_l) == _src(toc_s).replace("- [5. Limitations and risks](#5-limitations-and-risks)\n",
-                                               "- [5. Limitations and risks](#5-limitations-and-risks)\n- [Appendix](#appendix)\n")
+    assert _src(toc_s).endswith("- [5. Limitations and risks](#5-limitations-and-risks)")      # sections 1 to 5 only
+    assert _src(toc_l) == _src(toc_s) + "\n- [Appendix](#appendix)\n" + TECH_TOC
     rest_s, rest_l = s[2:], long_[2:]
     k = [c["id"] for c in rest_l].index("r2-appendix")
     t = [c["id"] for c in rest_l].index("c126")                          # the technical section
-    assert rest_l[:k] + rest_l[t:] == rest_s                             # identical cells, in the same order
+
+    def as_long(c):
+        x = _src(c)
+        if c["id"] in SHORT_ONLY_TEXT:
+            a, b = SHORT_ONLY_TEXT[c["id"]]
+            assert x.count(a) == 1, c["id"]
+            x = x.replace(a, b)
+        return x
+    key_s = lambda c: (c["cell_type"], as_long(c))                       # type and text only: ids, metadata, outputs
+    key_l = lambda c: (c["cell_type"], _src(c))
+    assert [key_l(c) for c in rest_l[:k] + rest_l[t:]] == [key_s(c) for c in rest_s]   # same cells (type and text), same order
     assert all(_src(c).count("### A.") <= 1 for c in rest_l[k:t])
+
+
+def test_short_notebook_thick_line_and_nothing_above_it_points_below():
+    """Round 5 ([owner-18], [analyst-51]): one thick line, directly after 5.2 and before the technical section, in the short
+    notebook only; no link above it points to an anchor below it, and every mention of the technical section above it
+    names the long notebook."""
+    short, long_ = _cells("savehitl_results.ipynb"), _cells("savehitl_results_long.ipynb")
+    ids = [c["id"] for c in short]
+    assert [c["id"] for c in short if "<hr" in _src(c)] == ["r5-thick-line"]
+    assert not any("<hr" in _src(c) for c in long_)
+    i = ids.index("r5-thick-line")
+    assert short[i]["cell_type"] == "markdown" and ids[i - 1] == "c125" and _src(short[i + 1]).startswith("# Technical section")
+    above = "\n".join(_src(c) for c in short[:i] if c["cell_type"] == "markdown")
+    below = "\n".join(_src(c) for c in short[i + 1:] if c["cell_type"] == "markdown")
+    anchors_above = set(re.findall(r'<a id="([^"]+)"></a>', above))
+    for link in re.findall(r"\]\(#([^)]+)\)", above):
+        assert link in anchors_above, link
+    assert set(re.findall(r'<a id="([^"]+)"></a>', below)).isdisjoint(re.findall(r"\]\(#([^)]+)\)", above))
+    for m in re.finditer(r"technical section", above):
+        assert above[m.end():].startswith(" of the long notebook"), above[max(0, m.start() - 80):m.end() + 40]
+    assert ids.index("c141") > i and "nb.hand_back()" in _src(short[ids.index("c141")])   # the archive cell stays below the line
 
 
 def test_both_notebooks_write_the_same_files():

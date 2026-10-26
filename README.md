@@ -1,16 +1,14 @@
 # SaveHITL-pub
 
-> **Draft.** The notebooks are in the repository unexecuted; their run-dependent text is still to be written. Sections marked **[TO FILL]** or **[TO CONFIRM]** are not final.
-
-**Purpose:** the code and the executed notebook that re-run the experiments of the project "Save the human in the loop" on the public FiFAR dataset.
+**Purpose:** the code and the two executed notebooks (short and long) that re-run the experiments of the project "Save the human in the loop" on the public FiFAR dataset.
 
 ## Contents
 
 | Path | What it is |
 |---|---|
-| `savehitl_results.ipynb` | The notebook, short version: the deciding results first, then the main descriptive results. It re-runs the whole chain section by section and shows the tables and graphs [TO CONFIRM: the executed copies from the final Colab run replace the unexecuted ones] |
-| `savehitl_results_long.ipynb` | The notebook, long version: the short version plus an appendix of further descriptive results. It runs the same computation and writes the same table and graph files |
-| `savehitl/` | The one library the notebook imports: what the notebook's cells call (`notebook.py`), set-up (`runner.py`), memory record (`memory.py`), router refit (`router.py`), the steps of the chain (`steps/`), the bootstrap and verdict code (`boot/`), the tables and graphs (`views/`), and the description of the run's outputs (`returned.py`) |
+| `savehitl_results.ipynb` | The notebook, short version: the deciding results first, then the main descriptive results. It is shown executed, with the outputs, tables and graphs of a complete run on Google Colab, so its results can be read without running it. Running it again re-runs the whole chain section by section |
+| `savehitl_results_long.ipynb` | The notebook, long version: the short version plus an appendix of further descriptive results. It is shown executed in the same way. It runs the same computation and writes the same table and graph files |
+| `savehitl/` | The one library both notebooks import: what the notebooks' cells call (`notebook.py`), set-up (`runner.py`), memory record (`memory.py`), router refit (`router.py`), the steps of the chain (`steps/`), the bootstrap and verdict code (`boot/`), the tables and graphs (`views/`), and the description of the run's outputs (`returned.py`) |
 | `patches/` | Four patch files applied to OpenL2D at commit `cfe5fd0` before the run: `0001` and `0002` (the reviewers' regeneration), `0006` and `0009` (the router's training files for the drawn teams). Each patched file is checked by sha256 before and after |
 | `environment.colab.yml` | The pinned environment: Python 3.7.9, NumPy 1.21.6, SciPy 1.7.3, pandas 1.3.5, scikit-learn 0.24.2, LightGBM 3.2.1, pyarrow 12.0.1 |
 | `results/router_selected_settings.csv` | The settings the study's search chose for each of the 250 router models; the default run refits the models from them |
@@ -22,15 +20,15 @@
 
 ### Google Colab (the tested route)
 
-The notebook is tested on Google Colab. This is the supported way to run it.
+Both notebooks are tested on Google Colab. This is the supported way to run them.
 
 1. Open the notebook in Google Colab (File > Open notebook > GitHub, or upload it) and choose a CPU runtime.
-2. In the settings cell near the top, set `FIFAR_DOWNLOAD_ALLOWED = True` to give permission to download FiFAR from figshare; with `False` nothing is downloaded and the run stops at the set-up. In the switch cell, `HYPERPARAM_TUNE = False` refits the 250 router models from the study's chosen settings; `True` runs the framework's full settings search instead (120 trials per model; more than one free Colab session).
-3. Run all cells (Runtime > Run all). If the notebook was opened on its own, the first code cell clones this repository into the session. The next cell installs the pinned environment, fetches OpenL2D at commit `cfe5fd0` with its archive `l2d_benchmarking.zip` and applies the patches, and downloads FiFAR; every file is checked by sha256. Each results section then runs the steps of the chain it needs, in order, and shows its tables and graphs. Table files go to `tables/` and graph files to `figures/`.
-4. The notebook's table "Run time and memory of this run", at the end of its technical section, gives each step's time and peak memory, measured during the run.
+2. In the settings cell near the top, `FIFAR_DOWNLOAD_ALLOWED = True` lets the notebook download FiFAR from figshare; with `False` nothing is downloaded and the run stops at the set-up. The executed notebooks show `True`, the value set for the run they display, so running them as they are downloads FiFAR. Set it to `False` if you do not want that. Downloading FiFAR is a use of it under its licence terms (see "Data: FiFAR"). In the switch cell, `HYPERPARAM_TUNE = False` refits the 250 router models from the study's chosen settings; `True` runs the framework's full settings search instead (120 trials per model; more than one free Colab session).
+3. Run all cells (Runtime > Run all). If the notebook was opened on its own, the third code cell, after the settings and switch cells, clones this repository into the session. The next cell installs the pinned environment, fetches OpenL2D at commit `cfe5fd0` with its archive `l2d_benchmarking.zip` and applies the patches, and downloads FiFAR; every file is checked by sha256. On Colab this cell takes about 4 minutes. Each results section then runs the steps of the chain it needs, in order, and shows its tables and graphs. Table files go to `tables/` and graph files to `figures/`. Run each notebook in its own fresh runtime: steps already done in the same runtime are not run again.
+4. The notebook's table "Run time and memory of this run", at the end of its technical section, gives each step's time and memory figure, measured during the run. Where several steps show exactly the same memory figure, that figure is the lowest the measurement records on Colab, not the step's own peak; for those steps the run does not show their own peak. The table's total covers the listed steps only, not the cloning and zip cells.
 5. The last cell writes `savehitl_returned_outputs.zip` and, on Colab, offers it for download, so that the run's outputs can be kept after the session ends. It holds the run's 28 table files (`tables/`); for each step of the chain, its record (`record.json`) and, for most steps, its summary output files, among them the verdicts, the bootstrap intervals and the list of the 250 refitted router models with their checksums; for each table-and-graph step, its record and manifest (`record.json`, `manifest.json`); the per-column summaries of the run's case-level files (`per_column_summaries.csv`: for columns of numbers, count, sum, sum of absolute values, minimum and maximum; for other columns, count, number of distinct values and a checksum of the values); and the run's logs, including its time and memory records (`logs/`). The minimum and maximum of a column are values of single applications, so for FiFAR's columns they are FiFAR data: the zip is for your own use, and if you pass it on, FiFAR's licence terms apply (see "Data: FiFAR"). It holds no graph file and no case row of FiFAR. The archives of the two notebooks differ only in their table-and-graph folders: 38 for the short notebook, 43 for the long one, whose five extra folders belong to the appendix tables.
 
-**[TO CONFIRM after the final Colab run]** The total run time and the peak memory of a free Colab session.
+On a free Google Colab CPU runtime, each notebook took about 20 minutes from the set-up cell to the end of its last section; the steps' own times, in the table of step 4, add up to the same. The cloning cell (the third code cell) and the last cell (the zip) add a little to this. The largest step, regenerating the reviewers, peaked at about 5.8 GB of memory. This is the largest step's own peak, not the whole session's: the notebook itself runs alongside it.
 
 ### Local machine (documented, not tested)
 
@@ -40,7 +38,7 @@ The set-up cell installs micromamba for Linux on x86_64, so the route below assu
 
 1. Clone this repository and start Jupyter from its root folder with any Python 3.
 2. Run the notebook as on Colab. The set-up cell installs micromamba and the pinned environment into `.tools/` inside the repository; OpenL2D and FiFAR are placed under `openl2d/`; run outputs go to `outputs/` and `logs/`, table and graph files to `tables/` and `figures/`. None of these folders is committed (`.gitignore`).
-3. About 20 GB of free disk space and 16 GB of memory are advisable [TO CONFIRM].
+3. About 5 GB of free disk space is advisable. On the study's own machine, the installed environment, OpenL2D, FiFAR and the run's outputs took about 1.9 GB; the set-up also needs space for the package cache and the downloads, which was not measured. For memory, 16 GB is advisable: the largest step peaked at about 5.8 GB on Colab and at about 4.3 GB on the study's own machine, which has 16 GB, and the notebook itself runs alongside it.
 
 On other systems, the pinned versions may not be available as packages; the notebook stops if any installed version differs from the pinned one.
 

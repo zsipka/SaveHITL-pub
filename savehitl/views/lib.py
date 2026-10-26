@@ -247,6 +247,7 @@ def savefig(fig, name):
 # "miss rate" and FP for a count of false rejections. Applied to what is displayed only (graph texts and the headers and
 # texts of displayed tables); the files in `tables/` and every step output keep the study's internal names.
 DISPLAY_TERMS = [
+    ("expected loss at 0.057", "misclassification cost"),   # S2-D-476: 0.057 is the default and is not repeated (display only)
     ("expected-loss difference", "misclassification-cost difference"), ("Expected-loss", "Misclassification-cost"),
     ("expected-loss", "misclassification-cost"), ("Expected loss", "Misclassification cost"), ("expected loss", "misclassification cost"),
     ("Loss avoided per review", "Cost avoided per review"), ("loss avoided per review", "cost avoided per review"),

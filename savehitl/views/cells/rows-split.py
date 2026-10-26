@@ -12,7 +12,7 @@ PART = {"classifier": "left to the classifier", "reviewed": "reviewed"}
 COMP = {("A", "1.00"): "team A at 1", ("B", "0.75"): "team B at 0.75", ("C", "0.75"): "team C at 0.75"}
 raw = keyed_rows("p3_desc", SPLIT_KEYS)
 raw["part"] = [PART["classifier" if "classifier part" in m else "reviewed"] for m in raw["measure name"]]
-raw["panel"] = ["misclassification cost, difference (cost ratio 0.057)" if "expected loss" in m else "frauds accepted, difference" for m in raw["measure name"]]
+raw["panel"] = ["misclassification cost, difference" if "expected loss" in m else "frauds accepted, difference" for m in raw["measure name"]]
 fig, axs = plt.subplots(1, 2, figsize=(14, 4.6))
 for ax, panel in zip(axs, dict.fromkeys(raw["panel"])):
     g = raw[raw["panel"] == panel].reset_index(drop=True)
