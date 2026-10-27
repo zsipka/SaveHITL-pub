@@ -126,8 +126,8 @@ def _coverage_faults():
 def test_a_every_built_item_is_in_the_mapping():
     from savehitl.views.sections import ITEMS
     items = _built_items() + _built_items("savehitl_results_long.ipynb")
-    assert len(set(_built_items())) == 38              # round 2: the 22 shown and the 16 written by nb.write_files
-    assert len(set(_built_items("savehitl_results_long.ipynb"))) == 43   # round 2: the 38, plus five appendix table parts
+    assert len(set(_built_items())) == 37              # the 21 shown and the 16 written by nb.write_files
+    assert len(set(_built_items("savehitl_results_long.ipynb"))) == 43   # the 37, plus the months graph and five appendix table parts
     missing = [i for i in items if i not in nb.NEEDS]
     assert missing == []
     assert set(nb.NEEDS) <= set(ITEMS)                           # no entry for a name the views step does not know
